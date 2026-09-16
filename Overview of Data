@@ -1,0 +1,39 @@
+Website: https://www.kaggle.com/datasets/edudev-commons-org/global-fuel-prices-100-years-19242024 
+
+Variables:
+year Calendar year (1924–2024)
+country	Country name
+iso3	ISO 3166-1 alpha-3 code
+currency_code	Local currency ISO code
+region	Geographic region (6 regions)
+decade	Decade label (e.g. "1970s")
+gasoline_usd_per_liter	Pump price — nominal USD/liter
+gasoline_usd_per_gallon	Pump price — nominal USD/gallon
+gasoline_real_2024usd	Pump price — real 2024 USD/liter (CPI-deflated)
+diesel_usd_per_liter	Diesel pump price — nominal USD/liter
+diesel_real_2024usd	Diesel pump price — real 2024 USD/liter
+lpg_usd_per_liter	LPG/kerosene — nominal USD/liter
+gasoline_local_currency	Approximate local-currency pump price
+gasoline_yoy_pct_change	Year-on-year % change in gasoline price
+diesel_yoy_pct_change	Year-on-year % change in diesel price
+price_tier	Categorical bracket (Very Low → Very High)
+tax_pct_of_pump_price	Estimated tax share of pump price (%)
+pretax_price_usd_ltr	Pre-tax pump price (USD/liter)
+subsidy_flag	1 if active government fuel subsidy, else 0
+subsidy_regime	none / partial / heavy
+is_oil_producer	1 if country is a significant crude oil producer
+crude_oil_usd_per_barrel	Annual average Brent/WTI crude (USD/barrel)
+crude_oil_usd_per_liter	Crude equivalent in USD/liter
+refinery_margin_usd_ltr	Pump price minus crude equivalent
+oil_price_shock_idx	Multiplier for major oil shock years (e.g. 1973, 1980, 2008)
+us_cpi	US CPI-U index value (1982–84 = 100)
+inflation_deflator_2024	Multiplier to convert nominal → 2024 USD
+
+Countries: 
+North America: United States, Canada
+Europe: United Kingdom, France, Germany, Italy, Norway, Turkey
+Asia Pacific: Japan, Australia
+Asia: India, China, South Korea, Singapore, Indonesia
+Middle East: Saudi Arabia, UAE, Iran
+Latin America: Brazil, Mexico, Argentina, Venezuela
+Africa: South Africa, Nigeria
