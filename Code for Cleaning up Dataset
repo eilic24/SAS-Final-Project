@@ -1,0 +1,46 @@
+*Clean data;
+*Get rid of variables;
+proc import
+datafile="/home/u64580380/STAT303/all_countries_combined.csv"
+out=work.countries_gas
+dbms=csv
+replace;
+getnames=yes;
+guessingrows=max;
+run;
+data work.countries_gas;
+set work.countries_gas;
+drop iso3
+currency_code
+decade
+gasoline_usd_per_gallon
+gasoline_real_2024usd
+diesel_real_2024usd
+gasoline_local_currency
+crude_oil_usd_per_barrel;
+run;
+proc export
+data=work.countries_gas
+outfile="/home/u64580380/STAT303/countries_gas.csv"
+dbms=csv
+replace;
+run;
+
+*Clean up values/names;
+data work.gas;
+set work.countries_gas;
+if inflation_deflator_2024 > 0 then gasoline_2024usd = gasoline_usd_per_liter * inflation_deflator_2024; 
+else gasoline_2024usd = .;
+length subsidy_status $20;
+if subsidy_flag = 1 then subsidy_status = "Subsidy";
+else if subsidy_flag = 0 then subsidy_status = "No subsidy";
+else subsidy_status = "Missing/invalid";
+label
+gasoline_usd_per_liter = "Gasoline price (nominal USD/liter)"
+diesel_usd_per_liter   = "Diesel price (nominal USD/liter)"
+gasoline_2024usd       = "Gasoline price (2024 USD/liter)"
+tax_pct_of_pump_price  = "Tax share of pump price (%)"
+gasoline_yoy_pct_change = "Annual gasoline price change (%)"
+subsidy_status        = "Fuel subsidy status";
+format gasoline_usd_per_liter diesel_usd_per_liter gasoline_2024usd 8.3 tax_pct_of_pump_price 6.1;
+run;
