@@ -1,0 +1,91 @@
+
+*Plot 1a: Gasoline prices over time by region;
+title "Average Inflation-Adjusted Gasoline Prices by Region";
+proc sgplot data=work.gas;
+vline year / response=gasoline_2024usd stat=mean group=region;
+xaxis values=(1924 1940 1960 1980 2000 2024);
+yaxis label="Mean gasoline price (2024 USD/liter)";
+keylegend / title="Region" position=bottom;
+run;
+
+*Plot 1b: Gasoline prices over time by country;
+title "Average Inflation-Adjusted Gasoline Prices by Country";
+proc sgplot data=work.gas;
+vline year / response=gasoline_2024usd stat=mean group=country;
+xaxis values=(1924 1940 1960 1980 2000 2024);
+yaxis label="Mean gasoline price (2024 USD/liter)";
+keylegend / title="Country" position=bottom;
+run;
+
+*Plot 2: Gasoline price distributions by region in 2024;
+title "Distribution of Gasoline Prices by Region in 2024";
+proc sgplot data=work.gas;
+where year = 2024;
+hbox gasoline_usd_per_liter / category=region datalabel=country;
+run;
+
+*Plot 3: Tax share versus gasoline price in 2024;
+title "Tax Share and Gasoline Prices Across Countries in 2024";
+proc sgplot data=work.gas;
+where year = 2024;
+scatter x=tax_pct_of_pump_price y=gasoline_usd_per_liter / group=region datalabel=country;
+keylegend / title="Region" position=bottom;
+run;
+
+*Plot 4: Gasoline prices by subsidy status in 2024;
+title "Gasoline Prices by Fuel Subsidy Status in 2024";
+proc sgplot data=work.gas;
+where year = 2024 and subsidy_flag in (0, 1);
+vbox gasoline_usd_per_liter / category=subsidy_status datalabel=country;
+run;
+
+*Plot 5: Gasoline versus diesel prices in 2024;
+title "Gasoline and Diesel Prices Across Countries in 2024";
+proc sgplot data=work.gas;
+where year = 2024;
+scatter x=gasoline_usd_per_liter y=diesel_usd_per_liter / group=region datalabel=country;
+lineparm x=0 y=0 slope=1 / lineattrs=(color=black);
+xaxis min=0;
+yaxis min=0;
+keylegend / title="Region" position=bottom;
+run;
+
+*Table 6: Correlations in 2024;
+title "Correlations of Fuel Prices and Tax Share in 2024";
+proc corr data=work.gas pearson spearman noprob;
+where year = 2024;
+var gasoline_usd_per_liter
+diesel_usd_per_liter
+tax_pct_of_pump_price;
+run;
+
+*Plot 7: Average gasoline and diesel prices across all years;
+proc means data=work.gas nway noprint;
+class year;
+var gasoline_2024usd diesel_2024usd;
+output out=work.annual_prices(drop=_type_ _freq_)
+mean=mean_gasoline mean_diesel;
+run;
+
+proc sort data=work.annual_prices;
+by year;
+run;
+
+axis1 label=("Mean price (2024 USD/liter)");
+axis2 label=("Year") order=(1924 1940 1960 1980 2000 2024);
+legend1 label=none value=("Gasoline" "Diesel");
+title "Average Gasoline and Diesel Prices, 1924-2024";
+
+proc gplot data=work.annual_prices;
+plot mean_gasoline*year mean_diesel*year / overlay vaxis=axis1 haxis=axis2 legend=legend1;
+run;
+quit;
+
+*Table 8: Fuel price and tax share correlations across all years;
+title "Fuel Price and Tax Share Correlations Across All Country-Years";
+proc corr data=work.gas pearson spearman noprob;
+var gasoline_2024usd
+diesel_2024usd
+tax_pct_of_pump_price;
+run;
+title;
