@@ -41,10 +41,3 @@ format gasoline_usd_per_liter diesel_usd_per_liter
 gasoline_2024usd diesel_2024usd 8.3
 tax_pct_of_pump_price 6.1;
 run;
-
-*Export;
-proc export data=work.gas
-outfile="/home/u64580380/STAT303/countries_gas.csv"
-dbms=csv
-replace;
-run;
