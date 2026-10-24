@@ -1,7 +1,7 @@
 *Import data;
 libname mydir "/home/u64580380/STAT303";
-
 proc import
+
 datafile="/home/u64580380/STAT303/all_countries_combined.csv"
 out=mydir.countries_gas
 dbms=csv
@@ -76,20 +76,33 @@ var gasoline_2024usd diesel_2024usd;
 output out=mydir.annual_prices(drop=_type_ _freq_)
 mean=mean_gasoline mean_diesel;
 run;
-
 proc sort data=mydir.annual_prices;
 by year;
 run;
-
 axis1 label=("Mean price (2024 USD/liter)");
 axis2 label=("Year") order=(1924 1940 1960 1980 2000 2024);
 legend1 label=none value=("Gasoline" "Diesel");
 title "Average Gasoline and Diesel Prices, 1924-2024";
-
 proc gplot data=mydir.annual_prices;
 plot mean_gasoline*year mean_diesel*year / overlay vaxis=axis1 haxis=axis2 legend=legend1;
 run;
 quit;
+
+*Histogram 1: Inflation-adjusted gasoline prices;
+title "Distribution of Inflation-Adjusted Gasoline Prices, 1924-2024";
+proc sgplot data=mydir.gas;
+histogram gasoline_2024usd / scale=percent;
+xaxis label="Gasoline price (2024 USD/liter)";
+yaxis label="Percent of country-year observations";
+run;
+
+*Histogram 2: Inflation-adjusted diesel prices;
+title "Distribution of Inflation-Adjusted Diesel Prices, 1924-2024";
+proc sgplot data=mydir.gas;
+histogram diesel_2024usd / scale=percent;
+xaxis label="Diesel price (2024 USD/liter)";
+yaxis label="Percent of country-year observations";
+run;
 
 *Table 8: Fuel price and tax share correlations across all years;
 title "Fuel Price and Tax Share Correlations Across All Country-Years";
