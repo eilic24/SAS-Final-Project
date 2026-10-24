@@ -1,0 +1,140 @@
+*Import data;
+libname mydir "/home/u64580380/STAT303";
+
+proc import
+datafile="/home/u64580380/STAT303/all_countries_combined.csv"
+out=mydir.countries_gas
+dbms=csv
+replace;
+getnames=yes;
+guessingrows=max;
+run;
+
+*Clean data and create variables;
+data mydir.gas;
+set mydir.countries_gas;
+drop iso3 currency_code decade
+gasoline_usd_per_gallon
+gasoline_real_2024usd diesel_real_2024usd
+gasoline_local_currency crude_oil_usd_per_barrel;
+if inflation_deflator_2024 > 0 then do;
+gasoline_2024usd = gasoline_usd_per_liter * inflation_deflator_2024;
+diesel_2024usd = diesel_usd_per_liter * inflation_deflator_2024;
+end;
+
+else do;
+gasoline_2024usd = .;
+diesel_2024usd = .;
+end;
+
+length subsidy_status $20;
+if subsidy_flag = 1 then subsidy_status = "Subsidy";
+else if subsidy_flag = 0 then subsidy_status = "No subsidy";
+else subsidy_status = "Missing/invalid";
+
+label
+year = "Year"
+country = "Country"
+region = "Region"
+gasoline_usd_per_liter = "Gasoline price (nominal USD/liter)"
+diesel_usd_per_liter = "Diesel price (nominal USD/liter)"
+gasoline_2024usd = "Gasoline price (2024 USD/liter)"
+diesel_2024usd = "Diesel price (2024 USD/liter)"
+tax_pct_of_pump_price = "Tax share of pump price (%)"
+gasoline_yoy_pct_change = "Annual gasoline price change (%)"
+subsidy_status = "Fuel subsidy status";
+format gasoline_usd_per_liter diesel_usd_per_liter
+gasoline_2024usd diesel_2024usd 8.3
+tax_pct_of_pump_price 6.1;
+run;
+
+/* Ela data 1a, 5, 7, table 8*/ 
+*Plot 1a: Gasoline prices over time by region;
+title "Average Inflation-Adjusted Gasoline Prices by Region";
+proc sgplot data=mydir.gas;
+vline year / response=gasoline_2024usd stat=mean group=region;
+xaxis values=(1924 1940 1960 1980 2000 2024);
+yaxis label="Mean gasoline price (2024 USD/liter)";
+keylegend / title="Region" position=bottom;
+run;
+
+*Plot 5: Gasoline versus diesel prices in 2024;
+title "Gasoline and Diesel Prices Across Countries in 2024";
+proc sgplot data=mydir.gas;
+where year = 2024;
+scatter x=gasoline_usd_per_liter y=diesel_usd_per_liter / group=region datalabel=country;
+lineparm x=0 y=0 slope=1 / lineattrs=(color=black);
+xaxis min=0;
+yaxis min=0;
+keylegend / title="Region" position=bottom;
+run;
+
+*Plot 7: Average gasoline and diesel prices across all years;
+proc means data=mydir.gas nway noprint;
+class year;
+var gasoline_2024usd diesel_2024usd;
+output out=mydir.annual_prices(drop=_type_ _freq_)
+mean=mean_gasoline mean_diesel;
+run;
+
+proc sort data=mydir.annual_prices;
+by year;
+run;
+
+axis1 label=("Mean price (2024 USD/liter)");
+axis2 label=("Year") order=(1924 1940 1960 1980 2000 2024);
+legend1 label=none value=("Gasoline" "Diesel");
+title "Average Gasoline and Diesel Prices, 1924-2024";
+
+proc gplot data=mydir.annual_prices;
+plot mean_gasoline*year mean_diesel*year / overlay vaxis=axis1 haxis=axis2 legend=legend1;
+run;
+quit;
+
+*Table 8: Fuel price and tax share correlations across all years;
+title "Fuel Price and Tax Share Correlations Across All Country-Years";
+proc corr data=mydir.gas pearson spearman noprob;
+var gasoline_2024usd
+diesel_2024usd
+tax_pct_of_pump_price;
+run;
+title;
+
+*Janelle Data: Proc Means, Proc Univariate, Proc Freq, Proc Gchart, analysis of any patterns observed; 
+proc freq data=mydir.gas;
+table region;
+run;
+proc contents data=mydir.gas;
+run;
+
+*Proc Means procedure; 
+proc sort data = mydir.gas; 
+by gasoline_usd_per_liter; 
+
+Proc means data = mydir.gas min q1 p50 q3 max; 
+var gasoline_usd_per_liter;
+var diesel_usd_per_liter;  
+Title "Five number summary of Gasoline & Diesel in USD/liter";
+run; 
+
+*Proc Univariate Procedure: Crude Oil ; 
+Proc Univariate data = mydir.gas;
+var crude_oil_usd_per_liter; 
+run; 
+
+*Proc freq procedure: region & price tier; 
+Title "Frequency ";
+Proc freq data = mydir.gas; 
+Tables region * is_oil_producer;
+run; 
+
+*Chart 9: Pie chart for price tiers by regions;
+proc sort data = mydir.gas; 
+by region; 
+run; 
+
+Title "Pie Chart of Price Tier";
+Proc Gchart data = mydir.gas; 
+pie price_tier; 
+by region; 
+run;  
